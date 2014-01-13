@@ -34,8 +34,12 @@ class MongoDBDatabaseDiscoveryMetric(DiscoveryMetric):
     DEFAULT_KEY = "mongodb.server.discovery.databases"
     DEFAULT_VALUE = json.dumps(dict(data = []))
 
-    def __init__(self, mongodHost, mongodPort):
-        self.mongoClient = pymongo.MongoClient(mongodHost, mongodPort)
+    def __init__(self, mongoClient = None, mongodHost = None, mongodPort = None):
+        if mongoClient:
+            self.mongoClient = mongoClient
+        else:
+            self.mongoClient = pymongo.MongoClient(mongodHost, mongodPort)
+
         # Get a list of all DB names
         self.update()
 
