@@ -29,6 +29,7 @@ from mon.zbx.comm.metrics import DiscoveryMetric
 
 class MongoDBDatabaseDiscoveryMetric(DiscoveryMetric):
     """ Discover a list of all DBs
+    @note: Only provides DB names - Lowest overhead, least information provided
     """
     DEFAULT_KEY = "mongodb.server.discovery.databases"
     DEFAULT_VALUE = json.dumps(dict(data = []))
@@ -53,7 +54,7 @@ class MongoDBDatabaseDiscoveryMetric(DiscoveryMetric):
 
 class MongoDBCollectionsDBDiscoveryMetric(DiscoveryMetric):
     """ Discover a list of all collections within all DBs
-    @note: Only provides DB names - Lowest overhead, least information provided
+    @note: Only provides DB names and collection names - Lowest overhead, least information provided
     """
     DEFAULT_KEY = "mongodb.server.discovery.databaseCollections"
     DEFAULT_VALUE = json.dumps(dict(data = []))
