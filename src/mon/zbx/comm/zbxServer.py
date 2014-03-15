@@ -30,26 +30,28 @@ from mon.zbx.comm.metric import Metric
 class ZabbixServer(threading.Thread):
     """ Allows interaction with a Zabbix server via its native server-agent protocol
     """
+    CFG_SECTION = 'ZabbixServer'
 
-    def __init__(self,
-                 host = '127.0.0.1',
-                 port = 10051,
-                 maxQueueSize = 100,
-                 maxBatch = 32,
-                 metricTimeout = 1,
-                 retryForever = False,
-                 ):
+    def __init__(self, config):
         """
         @param metricTimeout: How long to wait in seconds for more metrics before sending whatever is queued 
         """
         self.l = logging.getLogger(self.__class__.__module__ + "." + self.__class__.__name__)
-        self.host = host
-        self.port = int(port)
-        self.maxBatch=maxBatch
-        self.metricTimeout=metricTimeout
-        self.q = PriorityQueue(maxsize=maxQueueSize)
+        
+        self.cfg = config
+        if not self.CFG_SECTION in self.cfg.sections:
+            self.cfg[self.CFG_SECTION]={}
+        self.zCfg = self.cfg[self.CFG_SECTION]
+        self.host = self.zCfg.get('host', '127.0.0.1')
+        self.port = int(self.zCfg.get('port', '10051'))
+        self.maxBatch = int(self.zCfg.get('maxBatch', '32'))
+        self.metricTimeout = int(self.zCfg.get('metricTimeout', '1'))
+        self.q = PriorityQueue(maxsize = int(self.zCfg.get('maxQueueSize', '100')))
         self.keepRunning = True
-        self.retryForever = retryForever
+        if 'retryForever' in self.zCfg:
+            self.retryForever = self.zCfg.as_bool('retryForever')
+        else:
+            self.retryForever = False
         
         assert self.port > 0 and self.port < 65536, "Invalid port number %r" % self.port
 
@@ -57,8 +59,8 @@ class ZabbixServer(threading.Thread):
                                   self,
                                   name = repr(self),
                                   )
-        self.setDaemon(daemonic=False)
-        
+        self.setDaemon(daemonic = False)
+
     def stopRunning(self):
         """ Gracefully stop running once the queue is empty """
         self.keepRunning=False
