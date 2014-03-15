@@ -24,17 +24,14 @@ except:
 from mon.zbx.comm.metrics import DiscoveryMetric
 
 
-# TODO: Add support for node and sharding discovery
-
-
 class WWWDiscoveryMetric(DiscoveryMetric):
     """ Discover a list of all domains
     """
-    DEFAULT_KEY = "www.domains"
-    DEFAULT_VALUE = json.dumps(dict(data = []))
+    DEFAULT_KEY = lambda x: "discovery.domains"
+    DEFAULT_VALUE = lambda metric: json.dumps(dict(data = []))
 
-    def __init__(self, domainsCSV):
-
+    def __init__(self, domainsCSV, **kwargs):
+        super(WWWDiscoveryMetric, self).__init__(**kwargs)
         self.domainsCSV = domainsCSV
 
         # Get a list of all DB names
@@ -45,12 +42,11 @@ class WWWDiscoveryMetric(DiscoveryMetric):
         self.l.debug("Going to update domains list")
 
         self.clearMetrics()
-        with open(self.domainsCSV, 'rb') as f:
+        with open(self.domainsCSV, 'r') as f:
             for line in csv.DictReader(f):
                 name = line['DomainName'].lower()
                 self.l.debug("Working on domain %r", name)
-                self.dbNames.append(str(name))
-                self.addMetric({
+                self.addMetric(**{
                             '{#DOMAIN}':str(name),
                             })
 

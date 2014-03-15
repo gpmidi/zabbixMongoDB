@@ -26,15 +26,15 @@ from mon.zbx.comm.metric import Metric
 class DiscoveryMetric(Metric):
     """ Helps with low-level item/graph/etc discovery
     """
-    DEFAULT_KEY = "discovery.default"
-    DEFAULT_VALUE = json.dumps(dict(data = []))
+    DEFAULT_KEY = lambda metric: "discovery.default"
+    DEFAULT_VALUE = lambda metric: json.dumps(dict(data = []))
     ENFORCE_METRIC_MACRO = True
     ENFORCE_METRIC_MACRO_MATCH = re.compile(r'^\{\#[A-Z0-9_\-]+\}$') 
     
     
-    def __init__(self, discovered = None, **kwargs):
+    def __init__(self, discovered = None, value = None, **kwargs):
         self.discovered = discovered
-        super(self.__class__, self).__init__(value = None, **kwargs)
+        super(DiscoveryMetric, self).__init__(value = value, **kwargs)
 
     def getDiscovered(self):
         if self.discovered is None:
