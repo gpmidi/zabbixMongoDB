@@ -65,6 +65,27 @@ class DiscoveryMetric(Metric):
 
     def getValue(self):
         asObjs = dict(data = self.getDiscovered())
-        asStr = json.dumps(asObjs, indent = 0).replace('   ', '\t')
+        asStr = json.dumps(asObjs, indent = 0).replace('   ', '\t')\
+                .replace('{\n', '\t{\n').replace('\n}, \n', '\t}\n\t,\n')\
+                .replace('"{#', '\t\t"{#').replace('\n}\n', '\t}\n')\
+                .replace('": "', '":"').replace('\t{\n\"data\": ', '{\n\"data\":')
         self.l.log(3, "Created JSON %r from %r", asStr, asObjs)
         return asStr
+
+    def toZbxJSON(self):
+        """ Convert to JSON that Zabbix will accept """
+        # Zabbix has very fragile JSON parser, and we cannot use json to dump whole packet
+        ret = (
+               '\t\t{\n'
+               '\t\t\t"host":%s,\n'
+               '\t\t\t"key":%s,\n'
+               '\t\t\t"value":%s,\n'
+               '\t\t\t"clock":%s}'
+               ) % (
+                    json.dumps(self.getHost()),
+                    json.dumps(self.getKey()),
+                    json.dumps(self.getValue()),
+                    self.getClock(),
+                    )
+        self.l.log(3, "Serialized %r to %r", self, ret)
+        return ret
